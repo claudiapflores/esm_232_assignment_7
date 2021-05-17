@@ -145,7 +145,7 @@ res = as.data.frame(sens_micro$X) %>% pmap_dbl(p_wrapper, initialpop=ini, nstep=
 ```{r}
 # progress so far.... need to plot and get sobol main and total effects
 
-# use pmap here so we can specify rows of our sensitivity analysis parameter object 
+# use pmap to specify rows of our sensitivity analysis parameter object 
 res = as.data.frame(sens_micro$X) %>% pmap_dbl(p_wrapper, initialpop=ini, nstep=nyears, use_func=evolve_pop)
 
 # plot results 
