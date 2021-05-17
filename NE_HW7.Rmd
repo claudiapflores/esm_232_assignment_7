@@ -48,18 +48,18 @@ source("R/evolve_pop.R")
 evolve_pop
 
 ini = c(0,0,10,0) #start with 10 adult rabbits
-nyr=21 #number of years to run 
+nyr=20 #number of years to run 
 rabbit_pop=evolve_pop(fert, surv, ini, nyr) #run evolve_pop.R
 
 # note: from the code from class, the rabbit_pop at t=1 was giving 0 instead of 10, so I had to account for this in lines 57 and 62 when creating the dataframes
 
 yr = seq(from=1, to=nyr) #sequence of years
-rabbit_tot = cbind.data.frame(yr=seq(from=1,to=20,by=1), poptot=(rabbit_pop$poptot[2:21]))
+rabbit_tot = cbind.data.frame(yr=yr, poptot=(rabbit_pop$poptot))
 ggplot(rabbit_tot, aes(yr, poptot))+geom_col(fill="mediumpurple2")+labs(y="Total Rabbit Population", x="Year")
 
 
 # plot information about ages
-rabbit_ages = cbind.data.frame(yr=seq(from=1,to=20,by=1), t(rabbit_pop$popbyage[,1:20]))
+rabbit_ages = cbind.data.frame(yr=yr, t(rabbit_pop$popbyage))
 rabbit_agesl = rabbit_ages %>% gather(key="agecat", value="pop",-yr)
 ggplot(rabbit_agesl, aes(yr, pop, fill=agecat))+geom_col()+labs(y="Population", fill="Age Group")
 
