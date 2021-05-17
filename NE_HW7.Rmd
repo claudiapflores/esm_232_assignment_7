@@ -162,6 +162,10 @@ sens_micro$S
 sens_micro$T
 
 # graph sensitive parameter
-tmp = cbind.data.frame(sens_micro$X, pop12=sens_micro$y)
-ggplot(tmp, aes(p12, pop12))+geom_point()+labs(x="Survivability of 1 to older",y="pop after 12 months")
+tmp = cbind.data.frame(sens_micro$X, pop20=sens_micro$y)
+
+# graph for young (age 0-1)
+ggplot(tmp, aes(p12, pop20))+geom_point()+labs(x="Survivability of ages 0 to 1 ",y="pop after 20 years")
+# graph for sub-adults (age 1-2)
+ggplot(tmp, aes(p23, pop20))+geom_point()+labs(x="Survivability of ages 1 to 2",y="pop after 20 years")
 ```
