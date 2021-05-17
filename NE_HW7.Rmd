@@ -44,7 +44,7 @@ How many young rabbits (first age class) are there in the population at that tim
 fert =  c(0/2,2/2,6/2,1/2) #divide fertility (just for females) by 2
 surv=c(0.8,0.85, 0.65, 0.1) #survivability 
 
-source("/Users/neegholm/Documents/ESM232_S21/Rmaterials_May13/evolve_pop.R")
+source("R/evolve_pop.R")
 evolve_pop
 
 ini = c(0,0,10,0) #start with 10 adult rabbits
@@ -140,9 +140,28 @@ return(finalpop=res$poptot[nstep])
 
 
 res = as.data.frame(sens_micro$X) %>% pmap_dbl(p_wrapper, initialpop=ini, nstep=nyears, use_func=evolve_pop)
-
-# progress so far.... need to plot and get sobol main and total effects
 ```
 
+```{r}
+# progress so far.... need to plot and get sobol main and total effects
 
+# use pmap here so we can specify rows of our sensitivity analysis parameter object 
+res = as.data.frame(sens_micro$X) %>% pmap_dbl(p_wrapper, initialpop=ini, nstep=nyears, use_func=evolve_pop)
 
+# plot results 
+ggplot(data.frame(finalpop=res), aes(x=finalpop))+geom_density()
+# or a boxplot
+ggplot(data.frame(finalpop=res), aes(x="", y=finalpop/1000) )+geom_boxplot(fill="blue")+
+  theme(axis.title.x = element_blank())+labs(y="Final Pop (in 1000s)")
+
+# give results to sensitivity structure
+sens_micro=tell(sens_micro, res)
+
+# results
+sens_micro$S
+sens_micro$T
+
+# graph sensitive parameter
+tmp = cbind.data.frame(sens_micro$X, pop12=sens_micro$y)
+ggplot(tmp, aes(p12, pop12))+geom_point()+labs(x="Survivability of 1 to older",y="pop after 12 months")
+```
