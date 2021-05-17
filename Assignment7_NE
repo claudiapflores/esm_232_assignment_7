@@ -1,0 +1,146 @@
+---
+title: "ESM232- HW7"
+author: "Anna Abelman, Nathalie Eegholm, Claudia Flores "
+date: "5/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(sensitivity)
+library(ggplot2)
+```
+
+#Rabbits & Hawks, Assignment 7:
+
+A small city with a large urban park has decided to introduce a rare species of rabbits into this park - Rabbits are cute and the kids love them, and giving a rare species a new home sounds like a good idea. The urban park manager is concerned about how this rabbit population might grow over the next few decades. Rabbits have no natural predators in the region where the park is situated. The manager would like to know, approximately, how many rabbits there will be 20 years from now if the rabbits are introduced as planned. The manager reviewed the literature and found the following estimates for survival and fertility rates for the rare rabbit population, for 4 different age classes. The estimates for these rates are shown below:
+
+#Fertility (rabbit/female)
+Young (age 0-1): 0
+Sub-Adults (age 1-2): 2
+Adult (age 2-3): 6
+Aged (age 3-4): 1
+
+#Survivability (male and female)
+Young (age 0-1): 0.8
+Sub-Adults (age 1-2): 0.85
+Adult (age 2-3): 0.65
+Aged (age 3-4): 0.1
+
+
+# Part 1
+Using a matrix population model approach answer the following questions for the manager:
+
+Assume that we start with 10 adult rabbits. (group 3)
+
+What is the total rabbit population after 20 years?
+
+How many young rabbits (first age class) are there in the population at that time?
+
+
+```{r Part 1: Population after 20 years}
+
+fert =  c(0/2,2/2,6/2,1/2) #divide fertility (just for females) by 2
+surv=c(0.8,0.85, 0.65, 0.1) #survivability 
+
+source("/Users/neegholm/Documents/ESM232_S21/Rmaterials_May13/evolve_pop.R")
+evolve_pop
+
+ini = c(0,0,10,0) #start with 10 adult rabbits
+nyr=21 #number of years to run 
+rabbit_pop=evolve_pop(fert, surv, ini, nyr) #run evolve_pop.R
+
+# note: from the code from class, the rabbit_pop at t=1 was giving 0 instead of 10, so I had to account for this in lines 57 and 62 when creating the dataframes
+
+yr = seq(from=1, to=nyr) #sequence of years
+rabbit_tot = cbind.data.frame(yr=seq(from=1,to=20,by=1), poptot=(rabbit_pop$poptot[2:21]))
+ggplot(rabbit_tot, aes(yr, poptot))+geom_col(fill="mediumpurple2")+labs(y="Total Rabbit Population", x="Year")
+
+
+# plot information about ages
+rabbit_ages = cbind.data.frame(yr=seq(from=1,to=20,by=1), t(rabbit_pop$popbyage[,1:20]))
+rabbit_agesl = rabbit_ages %>% gather(key="agecat", value="pop",-yr)
+ggplot(rabbit_agesl, aes(yr, pop, fill=agecat))+geom_col()+labs(y="Population", fill="Age Group")
+
+
+#What is the total rabbit population after 20 years?
+rabbit_tot$poptot[20]
+
+#How many young rabbits (first age class) are there in the population at that time?
+rabbit_ages$`1`[20]
+```
+
+
+# Part 2
+The park manager is also thinking of ways to keep the population under control - by encouraging nesting of hawks that eat the rabbits. 
+
+Hawks generally only eat  younger rabbits- thus they reduce the survivability of the young and sub-adults age classes (the first two classes).  The estimates are that survivability reduced to between 0.65 and 0.75 for Ages 0-1 and between 0.75 and 0.8 for Ages 1-2. You can assume that distributions are uniform
+
+Perform a sensitivity analysis on the survivability of Young Age and Sub-Adults age class parameters.  Use Sobol to generate variation in the survivability parameters. Then for each parameter set, compute total rabbit population after 20 years. Similar to what we did in the agestructure.Rmd in class. 
+
+Plot how total rabbit population after 20 years varies with a) survivability of Young Age and b) Young Adult.  Also generate a box plot of the variation in total rabbit population.  How does this compare with total rabbit population after 20 years in your original population model (without the hawk related change to survivability)?
+
+
+
+```{r Part 2: Sobol Sensitivity Analysis}
+
+# survivability of rabbit age classes 1 and 2
+p12=0.8
+p23=0.85
+p34=0.65
+p4d=0.1
+
+f1=0
+f2=1
+f3=3
+f4=0.5
+
+#number of samples for Sobol parameters
+nsample=200
+
+
+# create our samples for Sobol
+sobol_1 = cbind.data.frame(p12=runif(min=0.65, max=0.75, n=nsample), p23 = runif(min=0.75, max=0.8, n=nsample))
+
+sobol_2 = cbind.data.frame(p12=runif(min=0.65, max=0.75, n=nsample), p23 = runif(min=0.75, max=0.8, n=nsample))
+
+
+
+# put all survivabilities and fertilities together (is this right)?
+allp1 = cbind.data.frame(sobol_1,p34=rep(p34,times=nsample), p4d= rep(p4d,times=nsample), f1=rep(f1,times=nsample), f2= rep(f2,times=nsample),f3=rep(f3,times=nsample),f4= rep(f4,times=nsample))
+
+
+allp2 = cbind.data.frame(sobol_2,p34=rep(p34,times=nsample), p4d= rep(p4d,times=nsample), f1=rep(f1,times=nsample), f2= rep(f2,times=nsample),f3=rep(f3,times=nsample),f4= rep(f4,times=nsample))
+
+
+
+# get Sobol samples
+sens_micro=soboljansen(model = NULL, allp1, allp2, nboot = 100)
+
+head(sens_micro$X)
+nsim=nrow(sens_micro$X)
+
+
+# run model and save what we care about: final population after 20 years 
+# this is already output by evolve_pop so we don't need a compute_metric function
+
+ini = c(0,0,10,0)
+nyears = 20
+
+
+# as before combine our application of the the dynamics model - for each
+# parameter set, with code to extract our metric of interest (final population)
+p_wrapper = function(p12, p23, p34, p4d, f1,f2,f3, f4, use_func, initialpop, nstep ) {
+fertility=c(f1,f2,f3, f4)
+survivability= c(p12,p23,p34, p4d)
+res = use_func(survivability =survivability, fertility = fertility, initialpop=initialpop, nstep=nstep)
+# now return the final population total
+return(finalpop=res$poptot[nstep])
+}
+
+
+res = as.data.frame(sens_micro$X) %>% pmap_dbl(p_wrapper, initialpop=ini, nstep=nyears, use_func=evolve_pop)
+
+# progress so far.... need to plot and get sobol main and total effects
+```
