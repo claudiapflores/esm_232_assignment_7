@@ -172,4 +172,6 @@ p1 <- ggplot(tmp, aes(p12, pop20))+geom_point()+labs(x="Survivability of ages 0 
 p2 <- ggplot(tmp, aes(p23, pop20))+geom_point()+labs(x="Survivability of ages 1 to 2",y="pop after 20 years")
 p3 <- p1 +p2
 p3
+
+plot(sens_micro)
 ```
