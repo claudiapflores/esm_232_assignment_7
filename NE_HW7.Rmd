@@ -160,8 +160,8 @@ ggplot(data.frame(finalpop=res), aes(x="", y=finalpop/1000) )+geom_boxplot(fill=
 sens_micro=tell(sens_micro, res)
 
 # results
-sens_micro$S
-sens_micro$T
+sens_micro$S[1:2,]
+sens_micro$T[1:2,]
 
 # graph sensitive parameter
 tmp = cbind.data.frame(sens_micro$X, pop20=sens_micro$y)
@@ -175,3 +175,4 @@ p3
 
 plot(sens_micro)
 ```
+The total rabbit population in the original population model without the hawk is 36452, but with the hawks ranges from 5325 to 17718, with a mean of 10362. The mean without the hawk is about 3.5 times lower with the hawk.
