@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(sensitivity)
 library(ggplot2)
+library(patchwork)
 ```
 
 #Rabbits & Hawks, Assignment 7:
@@ -166,7 +167,9 @@ sens_micro$T
 tmp = cbind.data.frame(sens_micro$X, pop20=sens_micro$y)
 
 # graph for young (age 0-1)
-ggplot(tmp, aes(p12, pop20))+geom_point()+labs(x="Survivability of ages 0 to 1 ",y="pop after 20 years")
+p1 <- ggplot(tmp, aes(p12, pop20))+geom_point()+labs(x="Survivability of ages 0 to 1 ",y="pop after 20 years")
 # graph for sub-adults (age 1-2)
-ggplot(tmp, aes(p23, pop20))+geom_point()+labs(x="Survivability of ages 1 to 2",y="pop after 20 years")
+p2 <- ggplot(tmp, aes(p23, pop20))+geom_point()+labs(x="Survivability of ages 1 to 2",y="pop after 20 years")
+p3 <- p1 +p2
+p3
 ```
