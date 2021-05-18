@@ -154,7 +154,8 @@ res = as.data.frame(sens_micro$X) %>% pmap_dbl(p_wrapper, initialpop=ini, nstep=
 ggplot(data.frame(finalpop=res), aes(x=finalpop))+geom_density()
 # or a boxplot
 ggplot(data.frame(finalpop=res), aes(x="", y=finalpop/1000) )+geom_boxplot(fill="blue")+
-  theme(axis.title.x = element_blank())+labs(y="Final Pop (in 1000s)")
+  theme(axis.title.x = element_blank())+labs(y="Final Population (in 1000s)")+labs(
+       title = "Rabbit Population After 20 Years, With Hawks Introduced")
 
 # give results to sensitivity structure
 sens_micro=tell(sens_micro, res)
